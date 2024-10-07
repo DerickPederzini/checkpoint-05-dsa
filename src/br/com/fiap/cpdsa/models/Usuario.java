@@ -69,4 +69,9 @@ public class Usuario implements Comparable<Usuario>{
         }
         return 0;
     }
+
+    @Override
+    public String toString() {
+        return nome + " - " + cpf;
+    }
 }
