@@ -3,7 +3,6 @@ package br.com.fiap.cpdsa.abb;
 
 import br.com.fiap.cpdsa.fila.Fila;
 import br.com.fiap.cpdsa.models.Usuario;
-
 import java.util.Comparator;
 import java.util.function.Function;
 
@@ -90,6 +89,7 @@ public class Abb<T> {
         return false;
     }
 
+
     public Abb<Usuario> geraAbbElegivelAOferta(Arvore<Usuario> p, double minimal, Abb<Usuario> newAbb){
         //Prenche nova ABB baseada em se o cliente é apto a oferta E o valor minimo é atendido
         if(p != null) {
@@ -148,6 +148,31 @@ public class Abb<T> {
             exibeOrdem(p.esq);
             System.out.println(p.dado);
             exibeOrdem(p.dir);
+        }
+    }
+
+    public int limitePorSaldo(Arvore<Usuario> p, Double minValue) {
+
+        if (p != null) {
+            Usuario usuario = p.dado;
+            double totalCompras = usuario.getTotalCompras();
+
+            if(minValue <= totalCompras){
+                return 1 + limitePorSaldo(p.esq, minValue) + limitePorSaldo(p.dir, minValue);
+            }else{
+                return limitePorSaldo(p.esq, minValue) + limitePorSaldo(p.dir, minValue);
+            }
+        }
+        return 0;
+    }
+
+    public void ofertaNaoAceita(Arvore p) {
+        if(p != null) {
+            ofertaNaoAceita(p.esq);
+            if (((Usuario) p.dado).isAptoOferta()) {
+                System.out.println(p.dado);
+            }
+            ofertaNaoAceita(p.dir);
         }
     }
 

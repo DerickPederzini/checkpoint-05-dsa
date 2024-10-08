@@ -4,6 +4,7 @@ import br.com.fiap.cpdsa.abb.Abb;
 import br.com.fiap.cpdsa.fila.Fila;
 import br.com.fiap.cpdsa.models.Usuario;
 
+
 import java.util.Comparator;
 import java.util.Scanner;
 
@@ -26,22 +27,22 @@ public class App {
                     2 - Ofertar produto;
                     3 - Entrar no submenu;
                     4 - Remover cliente do cadastro;
-                    5 - Exibir clientes REMOVER FUTURAMENTE;
+                    5 - Encerrar aplicação;
 
                     """);
             opcao = input.nextInt();
             input.nextLine();
 
             switch (opcao) {
-                case 0:
-                    System.out.println("Encerrando operação...");
-                    break;
                 case 1:
                     inserirCliente(abbUsuario);
                     break;
                 case 2:
-                    //talvez seja melhor juntar o alguns metodos desse caso 2, julgar depois
-                    abbOfertas = ofertaProduto(abbUsuario, abbOfertas); //gera abb de ofertas de produtos
+                    System.out.println("Valor minimo:");
+                    double minValue = input.nextDouble();
+                    input.nextLine();
+                    abbOfertas = ofertaProduto(abbUsuario, abbOfertas, minValue);
+              
                     fila = abbOfertas.generateQueue(abbOfertas.getRoot(), fila);
                     ContataCliente(fila);
                     break;
@@ -52,14 +53,14 @@ public class App {
                     removerCliente(abbUsuario);
                     break;
                 case 5:
-                    //Nicolas adicionou alguns casos aqui, pegar os casos dele
-                    //abbUsuario.buscarClientes(abbUsuario.getRoot());
+                    encerrar(abbOfertas);
+                    break;
                 default:
                     System.out.println("Opção inválida!");
                     break;
             }
 
-        } while (opcao != 0);
+        } while (opcao != 5);
 
     }
 
@@ -83,7 +84,12 @@ public class App {
         System.out.println("Insira o whatsApp: ");
         novoUsuario.setWhatsapp(sc.nextLine());
 
-        abbUsuario.exibeOrdem(abbUsuario.getRoot());
+        Random random = new Random();
+
+        novoUsuario.setTotalCompras(random.nextDouble(1001));
+
+        novoUsuario.setAptoOferta(true);
+
 
         abbUsuario.setRoot(abbUsuario.inserir(abbUsuario.getRoot(), novoUsuario));
     }
@@ -130,17 +136,18 @@ public class App {
         //estou considerando que,
         //todo cliente começa como sendo apto, se tornando não apto apos aceitar uma oferta
         while(fila.start != null){
+
             Usuario cliente = fila.dequeue().getDado();
             System.out.println("Olá cliente - " + cliente.getNome());
 
             System.out.println("Você está elegível para a oferta, deseja aceitá-la?");
             char result = input.next().toLowerCase().charAt(0);
 
-            if(result == 's'){
+            if (result == 's') {
                 System.out.println("Sua oferta foi aceita!!");
                 cliente.setAptoOferta(false);
                 System.out.println("Você não está mais apto para ofertas!");
-            } else if (result == 'n'){
+            } else if (result == 'n') {
                 System.out.println("Saindo da tela");
             }
 
@@ -149,6 +156,7 @@ public class App {
         }
 
     }
+
 
     public static void exibirSubmenu(Abb<Usuario>abbUsuario){
         int escolha;
@@ -166,21 +174,17 @@ public class App {
             switch (escolha) {
                 case 1:
                     //método que busca cliente por cpf
-                    //Derick alterou esse metodo para ficar mais parecido com o switch de exemplo da professora
-                    System.out.println("Insira o cpf: ");
-                    String cpf = input.nextLine();
-                    while (cpf.length() != 2) {
-                        System.out.println("Insira um cpf com 2 dígitos: ");
-                        cpf = input.nextLine();
-                    }
-                    buscarUsuarioCpf(abbUsuario, cpf);
+                    buscarClienteCpf(abbUsuario);
                     break;
+
                 case 2:
                     //método irá buscar os clientes e quanto gastaram
                     somaGastos(abbUsuario);
                     break;
+              
                 case 3:
                     //método que irá mostrar clientes com saldo acima do valor inserido
+                    buscarPorValorMinimo(abbUsuario);
                     break;
                 case 4:
                     //ir ao switch anterior
@@ -191,4 +195,19 @@ public class App {
         } while (escolha != 4);
     }
 
+
+    private static void buscarPorValorMinimo(Abb<Usuario> abbUsuario) {
+        System.out.println("Valor minimo:");
+        double minValue = input.nextDouble();
+        int usuarios = abbUsuario.limitePorSaldo(abbUsuario.getRoot(), minValue);
+        System.out.println("Quantidade de clientes com saldo acima de " + minValue + ": " + usuarios);
+    }
+
+    public static void encerrar(Abb<Usuario> abbOferta) {
+        System.out.println("================ Clientes aptos que não aceitaram a oferta ================");
+        System.out.println("");
+        abbOferta.ofertaNaoAceita(abbOferta.getRoot());
+        System.out.println("");
+        System.out.println("Encerrando a aplicação...");
+    }
 }
