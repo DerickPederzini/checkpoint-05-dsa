@@ -72,6 +72,6 @@ public class Usuario implements Comparable<Usuario>{
 
     @Override
     public String toString() {
-        return nome + " - " + cpf;
+        return nome + " - " + cpf + " - " + totalCompras + " - " + aptoOferta;
     }
 }
