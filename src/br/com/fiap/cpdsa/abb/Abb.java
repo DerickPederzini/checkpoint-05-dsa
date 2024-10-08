@@ -1,5 +1,6 @@
 package br.com.fiap.cpdsa.abb;
 
+
 import br.com.fiap.cpdsa.fila.Fila;
 import br.com.fiap.cpdsa.models.Usuario;
 
@@ -42,11 +43,42 @@ public class Abb<T> {
         return p;
     }
 
+
+    public Arvore remover(Arvore<T> p, T dado) {
+        if (p != null) {
+            if (comparator.compare(p.dado, dado) == 0) {
+                if (p.esq == null && p.dir == null)
+                    return null;
+                if (p.esq == null) {
+                    return p.dir;
+                } else {
+                    if (p.dir == null) {
+                        return p.esq;
+                    } else {
+                        Arvore<T> aux, ref;
+                        ref = p.dir;
+                        aux = p.dir;
+                        while (aux.esq != null)
+                            aux = aux.esq;
+                        aux.esq = p.esq;
+                        return ref;
+                    }
+                }
+            } else {
+                if (comparator.compare(p.dado, dado) > 0)
+                    p.esq = remover(p.esq, dado);
+                else
+                    p.dir = remover(p.dir, dado);
+            }
+        }
+        return p;
+    }
+
     public boolean isPresente(Arvore<T> p, T dado) {
         if(comparator.compare(p.dado, dado) == 0) {
             return true;
         } else {
-            if(comparator.compare(p.dado, dado) < 0) {
+            if (comparator.compare(p.dado, dado) < 0) {
                 isPresente(p.dir, dado);
             } else {
                 isPresente(p.esq, dado);
@@ -55,7 +87,19 @@ public class Abb<T> {
         return false;
     }
 
-    public Abb<Usuario> geraAbbElegivelAOferta(Arvore<Usuario> p, double minimal, Abb<Usuario> newAbb){
+
+    public Usuario buscaCpf(Arvore<T> p, String cpf) {
+        if (p != null) {
+            if (((Usuario) p.dado).getCpf().equalsIgnoreCase(cpf)) {
+                return (Usuario) p.dado;
+            }
+            buscaCpf(p.dir, cpf);
+            buscaCpf(p.esq, cpf);
+        }
+        return null;
+    }
+  
+    public Abb<Usuario> geraAbbElegivelAOferta(Arvore<T> p, double minimal, Abb<Usuario> newAbb){
         if(p != null) {
             if (checaElegivelOferta(p.dado, minimal) && p.dado.isAptoOferta()) {
                 p.dado.setAptoOferta(true);
@@ -84,7 +128,7 @@ public class Abb<T> {
         if(p != null) {
             exibeOrdem(p.esq);
             System.out.println(p.dado);
-            exibeOrdem(p.dir);
+            buscarClientes(p.dir);
         }
     }
 

@@ -35,7 +35,7 @@ public class Usuario implements Comparable<Usuario>{
         this.cpf = cpf;
     }
 
-    public String getWhatsapp() {
+    public String getwhatsapp() {
         return whatsapp;
     }
 
