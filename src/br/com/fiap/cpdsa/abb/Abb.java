@@ -5,11 +5,14 @@ import br.com.fiap.cpdsa.fila.Fila;
 import br.com.fiap.cpdsa.models.Usuario;
 
 import java.util.Comparator;
+import java.util.function.Function;
 
 public class Abb<T> {
-    private class Arvore<T> {
-        Arvore esq, dir;
+    private class Arvore<T>{
         T dado;
+        Arvore esq, dir;
+        //dessa forma, o dado, esquerda e direita, são alteraveis apenas dentro da ABB
+
     }
 
     private Comparator<T> comparator;
@@ -19,7 +22,7 @@ public class Abb<T> {
         this.comparator = comparator;
     }
 
-    public Arvore getRoot() {
+    public Arvore<T> getRoot() {
         return root;
     }
 
@@ -27,9 +30,9 @@ public class Abb<T> {
         this.root = root;
     }
 
-    public Arvore inserir(Arvore<T> p, T dado) {
+    public Arvore<T> inserir(Arvore<T> p, T dado) {
         if(p == null) {
-            p = new Arvore();
+            p = new Arvore<T>();
             p.esq = null;
             p.dir = null;
             p.dado = dado;
@@ -55,7 +58,7 @@ public class Abb<T> {
                     if (p.dir == null) {
                         return p.esq;
                     } else {
-                        Arvore<T> aux, ref;
+                        Arvore aux, ref;
                         ref = p.dir;
                         aux = p.dir;
                         while (aux.esq != null)
@@ -75,7 +78,7 @@ public class Abb<T> {
     }
 
     public boolean isPresente(Arvore<T> p, T dado) {
-        if(comparator.compare(p.dado, dado) == 0) {
+        if (comparator.compare(p.dado, dado) == 0) {
             return true;
         } else {
             if (comparator.compare(p.dado, dado) < 0) {
@@ -87,35 +90,28 @@ public class Abb<T> {
         return false;
     }
 
-
-    public Usuario buscaCpf(Arvore<T> p, String cpf) {
-        if (p != null) {
-            if (((Usuario) p.dado).getCpf().equalsIgnoreCase(cpf)) {
-                return (Usuario) p.dado;
-            }
-            buscaCpf(p.dir, cpf);
-            buscaCpf(p.esq, cpf);
-        }
-        return null;
-    }
-  
-    public Abb<Usuario> geraAbbElegivelAOferta(Arvore<T> p, double minimal, Abb<Usuario> newAbb){
+    public Abb<Usuario> geraAbbElegivelAOferta(Arvore<Usuario> p, double minimal, Abb<Usuario> newAbb){
+        //Prenche nova ABB baseada em se o cliente é apto a oferta E o valor minimo é atendido
         if(p != null) {
-            if (checaElegivelOferta(p.dado, minimal) && p.dado.isAptoOferta()) {
-                p.dado.setAptoOferta(true);
-                newAbb.setRoot(newAbb.inserir(newAbb.getRoot(), p.dado));
+            Usuario u = p.dado;
+            if (checaElegivelOferta(u, minimal) && u.isAptoOferta()) {
+                (u).setAptoOferta(true);
+                newAbb.setRoot(newAbb.inserir(newAbb.getRoot(), u));
             }
             newAbb = geraAbbElegivelAOferta(p.esq, minimal, newAbb);
             newAbb = geraAbbElegivelAOferta(p.dir, minimal, newAbb);
-            }
+        }
         return newAbb;
     }
 
-    private boolean checaElegivelOferta(Usuario u, double minimal) {
+    private static boolean checaElegivelOferta(Usuario u, double minimal) {
         return u.getTotalCompras() >= minimal;
     }
 
     public Fila generateQueue(Arvore abb, Fila fila){
+        //GERA QUEUE de maneira decrescente
+        //OU SEJA, do maior pro menor
+        //Esse metodo precisa estar aqui na abb, não na main
         if(abb != null){
             generateQueue(abb.dir, fila);
             fila.enqueue(abb.dado);
@@ -124,11 +120,34 @@ public class Abb<T> {
         return fila;
     }
 
-    public void exibeOrdem(Arvore p) {
+    public Usuario buscaCpf(Arvore<Usuario> p, String cpf) {
+        if (p != null) {
+            Usuario usuario = p.dado;
+            if ((usuario.getCpf().equalsIgnoreCase(cpf))) {
+                return usuario;
+            }
+            buscaCpf(p.dir, cpf);
+            buscaCpf(p.esq, cpf);
+        }
+        return null;
+    }
+
+    public double somaGastos(Arvore<Usuario> p) {
+        //SOMA GASTOS DE TODOS OS CLIENTES JUNTOS, não é gasto total de cada um
+        if (p != null) {
+            Usuario usuario = p.dado;
+            double totalCompras = usuario.getTotalCompras();
+
+            return somaGastos(p.esq) + somaGastos(p.dir) + totalCompras;
+        }
+        return 0;
+    }
+
+    public void exibeOrdem(Arvore<T> p) {
         if(p != null) {
             exibeOrdem(p.esq);
             System.out.println(p.dado);
-            buscarClientes(p.dir);
+            exibeOrdem(p.dir);
         }
     }
 
