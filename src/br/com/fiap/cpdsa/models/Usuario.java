@@ -35,7 +35,7 @@ public class Usuario implements Comparable<Usuario>{
         this.cpf = cpf;
     }
 
-    public String getWhatsapp() {
+    public String getwhatsapp() {
         return whatsapp;
     }
 
@@ -72,6 +72,8 @@ public class Usuario implements Comparable<Usuario>{
 
     @Override
     public String toString() {
-        return nome + " - " + cpf;
+        return "Nome: " + nome + "\t" +
+                "CPF: " + cpf + "\t" +
+                "Total gasto: " + totalCompras;
     }
 }
