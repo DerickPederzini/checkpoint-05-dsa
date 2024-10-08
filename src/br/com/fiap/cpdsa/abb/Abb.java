@@ -3,7 +3,6 @@ package br.com.fiap.cpdsa.abb;
 
 import br.com.fiap.cpdsa.fila.Fila;
 import br.com.fiap.cpdsa.models.Usuario;
-
 import java.util.Comparator;
 
 public class Abb<T> {
@@ -99,7 +98,7 @@ public class Abb<T> {
         return null;
     }
   
-    public Abb<Usuario> geraAbbElegivelAOferta(Arvore<T> p, double minimal, Abb<Usuario> newAbb){
+    public Abb<Usuario> geraAbbElegivelAOferta(Arvore<Usuario> p, double minimal, Abb<Usuario> newAbb){
         if(p != null) {
             if (checaElegivelOferta(p.dado, minimal) && p.dado.isAptoOferta()) {
                 p.dado.setAptoOferta(true);
@@ -128,7 +127,32 @@ public class Abb<T> {
         if(p != null) {
             exibeOrdem(p.esq);
             System.out.println(p.dado);
-            buscarClientes(p.dir);
+            exibeOrdem(p.dir);
+        }
+    }
+
+    public int limitePorSaldo(Arvore<Usuario> p, Double minValue) {
+
+        if (p != null) {
+            Usuario usuario = p.dado;
+            double totalCompras = usuario.getTotalCompras();
+
+            if(minValue <= totalCompras){
+                return 1 + limitePorSaldo(p.esq, minValue) + limitePorSaldo(p.dir, minValue);
+            }else{
+                return limitePorSaldo(p.esq, minValue) + limitePorSaldo(p.dir, minValue);
+            }
+        }
+        return 0;
+    }
+
+    public void ofertaNaoAceita(Arvore p) {
+        if(p != null) {
+            ofertaNaoAceita(p.esq);
+            if (((Usuario) p.dado).isAptoOferta()) {
+                System.out.println(p.dado);
+            }
+            ofertaNaoAceita(p.dir);
         }
     }
 
