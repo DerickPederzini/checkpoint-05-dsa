@@ -1,17 +1,19 @@
 package br.com.fiap.cpdsa.abb;
 
+
+import br.com.fiap.cpdsa.fila.Fila;
 import br.com.fiap.cpdsa.models.Usuario;
 
 import java.util.Comparator;
 
 public class Abb<T> {
-    private class Arvore {
+    private class Arvore<T> {
         Arvore esq, dir;
         T dado;
     }
 
     private Comparator<T> comparator;
-    private Arvore root;
+    private Arvore<T> root;
 
     public Abb(Comparator<T> comparator) {
         this.comparator = comparator;
@@ -25,8 +27,8 @@ public class Abb<T> {
         this.root = root;
     }
 
-    public Arvore inserir(Arvore p, T dado) {
-        if (p == null) {
+    public Arvore inserir(Arvore<T> p, T dado) {
+        if(p == null) {
             p = new Arvore();
             p.esq = null;
             p.dir = null;
@@ -41,7 +43,8 @@ public class Abb<T> {
         return p;
     }
 
-    public Arvore remover(Arvore p, T dado) {
+
+    public Arvore remover(Arvore<T> p, T dado) {
         if (p != null) {
             if (comparator.compare(p.dado, dado) == 0) {
                 if (p.esq == null && p.dir == null)
@@ -52,7 +55,7 @@ public class Abb<T> {
                     if (p.dir == null) {
                         return p.esq;
                     } else {
-                        Arvore aux, ref;
+                        Arvore<T> aux, ref;
                         ref = p.dir;
                         aux = p.dir;
                         while (aux.esq != null)
@@ -71,8 +74,8 @@ public class Abb<T> {
         return p;
     }
 
-    public boolean isPresente(Arvore p, T dado) {
-        if (comparator.compare(p.dado, dado) == 0) {
+    public boolean isPresente(Arvore<T> p, T dado) {
+        if(comparator.compare(p.dado, dado) == 0) {
             return true;
         } else {
             if (comparator.compare(p.dado, dado) < 0) {
@@ -84,7 +87,8 @@ public class Abb<T> {
         return false;
     }
 
-    public Usuario buscaCpf(Arvore p, String cpf) {
+
+    public Usuario buscaCpf(Arvore<T> p, String cpf) {
         if (p != null) {
             if (((Usuario) p.dado).getCpf().equalsIgnoreCase(cpf)) {
                 return (Usuario) p.dado;
@@ -94,12 +98,38 @@ public class Abb<T> {
         }
         return null;
     }
+  
+    public Abb<Usuario> geraAbbElegivelAOferta(Arvore<T> p, double minimal, Abb<Usuario> newAbb){
+        if(p != null) {
+            if (checaElegivelOferta(p.dado, minimal) && p.dado.isAptoOferta()) {
+                p.dado.setAptoOferta(true);
+                newAbb.setRoot(newAbb.inserir(newAbb.getRoot(), p.dado));
+            }
+            newAbb = geraAbbElegivelAOferta(p.esq, minimal, newAbb);
+            newAbb = geraAbbElegivelAOferta(p.dir, minimal, newAbb);
+            }
+        return newAbb;
+    }
 
-    public void buscarClientes(Arvore p) {
-        if (p != null) {
-            buscarClientes(p.esq);
+    private boolean checaElegivelOferta(Usuario u, double minimal) {
+        return u.getTotalCompras() >= minimal;
+    }
+
+    public Fila generateQueue(Arvore abb, Fila fila){
+        if(abb != null){
+            generateQueue(abb.dir, fila);
+            fila.enqueue(abb.dado);
+            generateQueue(abb.esq, fila);
+        }
+        return fila;
+    }
+
+    public void exibeOrdem(Arvore p) {
+        if(p != null) {
+            exibeOrdem(p.esq);
             System.out.println(p.dado);
             buscarClientes(p.dir);
         }
     }
+
 }
