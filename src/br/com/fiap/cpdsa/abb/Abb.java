@@ -77,13 +77,15 @@ public class Abb<T> {
     }
 
     public boolean isPresente(Arvore<T> p, T dado) {
-        if (comparator.compare(p.dado, dado) == 0) {
-            return true;
-        } else {
-            if (comparator.compare(p.dado, dado) < 0) {
-                isPresente(p.dir, dado);
+        if(p != null) {
+            if (comparator.compare(p.dado, dado) == 0) {
+                return true;
             } else {
-                isPresente(p.esq, dado);
+                if (comparator.compare(p.dado, dado) < 0) {
+                    return isPresente(p.dir, dado);
+                } else {
+                    return isPresente(p.esq, dado);
+                }
             }
         }
         return false;
@@ -94,7 +96,7 @@ public class Abb<T> {
         //Prenche nova ABB baseada em se o cliente é apto a oferta E o valor minimo é atendido
         if(p != null) {
             Usuario u = p.dado;
-            if (checaElegivelOferta(u, minimal) && u.isAptoOferta()) {
+            if ((u.getTotalCompras() >= minimal) && u.isAptoOferta()) {
                 (u).setAptoOferta(true);
                 newAbb.setRoot(newAbb.inserir(newAbb.getRoot(), u));
             }
@@ -104,11 +106,7 @@ public class Abb<T> {
         return newAbb;
     }
 
-    private static boolean checaElegivelOferta(Usuario u, double minimal) {
-        return u.getTotalCompras() >= minimal;
-    }
-
-    public Fila generateQueue(Arvore abb, Fila fila){
+    public Fila<T> generateQueue(Arvore<T> abb, Fila<T> fila){
         //GERA QUEUE de maneira decrescente
         //OU SEJA, do maior pro menor
         //Esse metodo precisa estar aqui na abb, não na main
@@ -166,13 +164,13 @@ public class Abb<T> {
         return 0;
     }
 
-    public void ofertaNaoAceita(Arvore p) {
+    public void naoParticipouOferta(Arvore<T> p, double minValue) {
         if(p != null) {
-            ofertaNaoAceita(p.esq);
-            if (((Usuario) p.dado).isAptoOferta()) {
+            naoParticipouOferta(p.esq, minValue);
+            if (((Usuario) p.dado).getTotalCompras() < minValue) {
                 System.out.println(p.dado);
             }
-            ofertaNaoAceita(p.dir);
+            naoParticipouOferta(p.dir, minValue);
         }
     }
 
