@@ -4,20 +4,17 @@ import br.com.fiap.cpdsa.abb.Abb;
 import br.com.fiap.cpdsa.fila.Fila;
 import br.com.fiap.cpdsa.models.Usuario;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Scanner;
 
 public class App {
-
-
     static Scanner input = new Scanner(System.in);
 
     public static void main(String[] args) {
 
         Abb<Usuario> abbUsuario = new Abb<>(Comparator.comparing(Usuario::getCpf));
         Abb<Usuario> abbOfertas = new Abb<>(Comparator.comparing(Usuario::getTotalCompras));
+
         Fila<Usuario> fila = new Fila();
 
         int opcao;
@@ -32,8 +29,8 @@ public class App {
                     5 - Exibir clientes REMOVER FUTURAMENTE;
 
                     """);
-            opcao = sc.nextInt();
-            sc.nextLine();
+            opcao = input.nextInt();
+            input.nextLine();
 
             switch (opcao) {
                 case 0:
@@ -42,56 +39,21 @@ public class App {
                 case 1:
                     inserirCliente(abbUsuario);
                     break;
-
+                case 2:
+                    //talvez seja melhor juntar o alguns metodos desse caso 2, julgar depois
+                    abbOfertas = ofertaProduto(abbUsuario, abbOfertas); //gera abb de ofertas de produtos
+                    fila = abbOfertas.generateQueue(abbOfertas.getRoot(), fila);
+                    ContataCliente(fila);
+                    break;
                 case 3:
-                    int escolha;
-                    do {
-                        System.out.println("""
-                                SUBMENU
-                                                
-                                1 - Buscar cliente pelo cpf;
-                                2 - Total de gastos de todos os clientes;
-                                3 - Clientes com saldo acima do valor a ser inserido;
-                                4 - Voltar ao menu principal;
-                                """);
-                        escolha = sc.nextInt();
-
-                        switch (escolha) {
-                            case 1:
-                                //método que busca cliente por cpf
-                                buscarClienteCpf(abbUsuario);
-                                break;
-                            case 2:
-                                //método irá buscar os clientes e quanto gastaram
-                                buscarTodosClientes(abbUsuario);
-                                break;
-                            case 3:
-                                //método que irá mostrar clientes com saldo acima do valor inserido
-                                break;
-                            case 4:
-                                //ir ao switch anterior
-                                break;
-                            default:
-                                System.out.println("Opção inválida");
-                        }
-                    } while (escolha != 4);
+                    exibirSubmenu(abbUsuario);
                     break;
                 case 4:
                     removerCliente(abbUsuario);
                     break;
                 case 5:
-                    abbUsuario.buscarClientes(abbUsuario.getRoot());
-
-                case 2:
-                    abbOfertas = ofertaProduto(abbUsuario, abbOfertas);
-                    fila = abbOfertas.generateQueue(abbOfertas.getRoot(), fila);
-                    fila.display();
-                    ContataCliente(fila);
-                    abbOfertas.exibeOrdem(abbOfertas.getRoot());
-                    fila.display();
-                    abbOfertas.setRoot(null);
-
-                    break;
+                    //Nicolas adicionou alguns casos aqui, pegar os casos dele
+                    //abbUsuario.buscarClientes(abbUsuario.getRoot());
                 default:
                     System.out.println("Opção inválida!");
                     break;
@@ -118,9 +80,10 @@ public class App {
             cpf = sc.nextLine();
         }
         novoUsuario.setCpf(cpf);
-
         System.out.println("Insira o whatsApp: ");
         novoUsuario.setWhatsapp(sc.nextLine());
+
+        abbUsuario.exibeOrdem(abbUsuario.getRoot());
 
         abbUsuario.setRoot(abbUsuario.inserir(abbUsuario.getRoot(), novoUsuario));
     }
@@ -137,17 +100,10 @@ public class App {
         abbUsuario.setRoot(abbUsuario.remover(abbUsuario.getRoot(), novoUsuario));
     }
 
-    public static void buscarClienteCpf(Abb<Usuario> abbUsuario) {
-        Scanner sc = new Scanner(System.in);
-
+    public static void buscarUsuarioCpf(Abb<Usuario> abbUsuario, String cpf) {
+        //metodo alterado com apenas a funcionalidade de buscar o usuario
         System.out.println("================ Buscando cliente por CPF ================");
 
-        System.out.println("Insira o cpf: ");
-        String cpf = sc.nextLine();
-        while (cpf.length() != 2) {
-            System.out.println("Insira um cpf com 2 dígitos: ");
-            cpf = sc.nextLine();
-        }
         Usuario user = abbUsuario.buscaCpf(abbUsuario.getRoot(), cpf);
 
         if (user == null) {
@@ -157,34 +113,22 @@ public class App {
         }
     }
 
-    public static void buscarTodosClientes (Abb<Usuario> abbUsuario) {
-        abbUsuario.buscarClientes(abbUsuario.getRoot());
-
-        // puta que pariu tira isso AAAAAA
-        Usuario a1 = new Usuario("Derick", "20", "33", 100, true);
-        Usuario a2 = new Usuario("Nicolas", "10", "33", 550, true);
-        Usuario a3 = new Usuario("Marcelo", "30", "33", 333, true);
-        Usuario a4 = new Usuario("Edu", "12", "33", 120, true);
-        Usuario a5 = new Usuario("Felipe", "80", "33", 990, true);
-
-
-        abbUsuario.setRoot(abbUsuario.inserir(abbUsuario.getRoot(), a1));
-        abbUsuario.setRoot(abbUsuario.inserir(abbUsuario.getRoot(), a2));
-        abbUsuario.setRoot(abbUsuario.inserir(abbUsuario.getRoot(), a3));
-        abbUsuario.setRoot(abbUsuario.inserir(abbUsuario.getRoot(), a4));
-        abbUsuario.setRoot(abbUsuario.inserir(abbUsuario.getRoot(), a5));
-        abbUsuario.exibeOrdem(abbUsuario.getRoot());
+    public static void somaGastos (Abb<Usuario> abbUsuario) {
+        System.out.println("A Soma dos gastos de todos os clientes foi de: "+abbUsuario.somaGastos(abbUsuario.getRoot()));
     }
 
     public static Abb<Usuario> ofertaProduto(Abb<Usuario> abbUsuario, Abb<Usuario> abbOfertas) {
         System.out.println("Valor minimo:");
         double minValue = input.nextDouble();
+        //Talvez seja melhor juntar esse e alguns outros metodos em um só
         abbOfertas =  abbUsuario.geraAbbElegivelAOferta(abbUsuario.getRoot(), minValue, abbOfertas);
         return abbOfertas;
     }
 
     public static void ContataCliente(Fila<Usuario> fila){
-
+        //Apos gerar a fila, este metodo faz o cliente escolher sua oferta e altera sua aptidão
+        //estou considerando que,
+        //todo cliente começa como sendo apto, se tornando não apto apos aceitar uma oferta
         while(fila.start != null){
             Usuario cliente = fila.dequeue().getDado();
             System.out.println("Olá cliente - " + cliente.getNome());
@@ -204,6 +148,47 @@ public class App {
             System.out.println("Avançando!");
         }
 
+    }
+
+    public static void exibirSubmenu(Abb<Usuario>abbUsuario){
+        int escolha;
+        do {
+            System.out.println("""
+                                SUBMENU
+                                                
+                                1 - Buscar cliente pelo cpf;
+                                2 - Total de gastos de todos os clientes;
+                                3 - Clientes com saldo acima do valor a ser inserido;
+                                4 - Voltar ao menu principal;
+                                """);
+            escolha = input.nextInt();
+
+            switch (escolha) {
+                case 1:
+                    //método que busca cliente por cpf
+                    //Derick alterou esse metodo para ficar mais parecido com o switch de exemplo da professora
+                    System.out.println("Insira o cpf: ");
+                    String cpf = input.nextLine();
+                    while (cpf.length() != 2) {
+                        System.out.println("Insira um cpf com 2 dígitos: ");
+                        cpf = input.nextLine();
+                    }
+                    buscarUsuarioCpf(abbUsuario, cpf);
+                    break;
+                case 2:
+                    //método irá buscar os clientes e quanto gastaram
+                    somaGastos(abbUsuario);
+                    break;
+                case 3:
+                    //método que irá mostrar clientes com saldo acima do valor inserido
+                    break;
+                case 4:
+                    //ir ao switch anterior
+                    break;
+                default:
+                    System.out.println("Opção inválida");
+            }
+        } while (escolha != 4);
     }
 
 }
